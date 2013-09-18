@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--The COPYRIGHT file at the top level of this repository             
+contains the full copyright notices and license terms. -->
+<form string="Stock Lot Cost Line">
+    <label name="lot"/>
+    <field name="lot"/>
+    <label name="origin"/>
+    <field name="origin"/>
+    <newline/>
+    <label name="category"/>
+    <field name="category"/>
+    <label name="unit_price"/>
+    <field name="unit_price"/>
+</form>

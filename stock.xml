@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<!-- The COPYRIGHT file at the top level of this repository contains the full
+     copyright notices and license terms. -->
+<tryton>
+    <data>
+        <!-- stock.lot.cost_category -->
+        <record model="ir.ui.view" id="stock_lot_cost_category_form_view">
+            <field name="model">stock.lot.cost_category</field>
+            <field name="type">form</field>
+            <field name="name">lot_cost_category_form</field>
+        </record>
+
+        <record model="ir.ui.view" id="stock_lot_cost_category_list_view">
+            <field name="model">stock.lot.cost_category</field>
+            <field name="type">tree</field>
+            <field name="name">lot_cost_category_list</field>
+        </record>
+
+        <record model="ir.action.act_window" id="act_stock_lot_cost_category">
+            <field name="name">Lot Cost Category</field>
+            <field name="res_model">stock.lot.cost_category</field>
+            <field name="search_value"></field>
+        </record>
+        <record model="ir.action.act_window.view"
+            id="act_stock_lot_cost_category_view1">
+            <field name="sequence" eval="10"/>
+            <field name="view" ref="stock_lot_cost_category_list_view"/>
+            <field name="act_window" ref="act_stock_lot_cost_category"/>
+        </record>
+        <record model="ir.action.act_window.view"
+            id="act_stock_lot_cost_category_view2">
+            <field name="sequence" eval="20"/>
+            <field name="view" ref="stock_lot_cost_category_form_view"/>
+            <field name="act_window" ref="act_stock_lot_cost_category"/>
+        </record>
+
+        <record model="ir.model.access" id="access_stock_lot_cost_category">
+            <field name="model"
+                search="[('model', '=', 'stock.lot.cost_category')]"/>
+            <field name="group" ref="stock.group_stock"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_delete" eval="False"/>
+        </record>
+        <record model="ir.model.access"
+            id="access_stock_lot_cost_category_admin">
+            <field name="model"
+                search="[('model', '=', 'stock.lot.cost_category')]"/>
+            <field name="group" ref="stock.group_stock_admin"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_delete" eval="True"/>
+        </record>
+
+        <!-- stock.lot.cost_line -->
+        <record model="ir.ui.view" id="stock_lot_cost_line_form_view">
+            <field name="model">stock.lot.cost_line</field>
+            <field name="type">form</field>
+            <field name="name">lot_cost_line_form</field>
+        </record>
+
+        <record model="ir.ui.view" id="stock_lot_cost_line_list_view">
+            <field name="model">stock.lot.cost_line</field>
+            <field name="type">tree</field>
+            <field name="name">lot_cost_line_list</field>
+        </record>
+
+        <record model="ir.action.act_window" id="act_stock_lot_cost_line">
+            <field name="name">Stock Lot Cost Line</field>
+            <field name="res_model">stock.lot.cost_line</field>
+            <field name="search_value"></field>
+        </record>
+        <record model="ir.action.act_window.view"
+            id="act_stock_lot_cost_line_view1">
+            <field name="sequence" eval="10"/>
+            <field name="view" ref="stock_lot_cost_line_list_view"/>
+            <field name="act_window" ref="act_stock_lot_cost_line"/>
+        </record>
+        <record model="ir.action.act_window.view"
+            id="act_stock_lot_cost_line_view2">
+            <field name="sequence" eval="20"/>
+            <field name="view" ref="stock_lot_cost_line_form_view"/>
+            <field name="act_window" ref="act_stock_lot_cost_line"/>
+        </record>
+
+        <record model="ir.model.access" id="access_stock_lot_cost_line">
+            <field name="model"
+                search="[('model', '=', 'stock.lot.cost_line')]"/>
+            <field name="group" ref="stock.group_stock"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_delete" eval="False"/>
+        </record>
+        <record model="ir.model.access" id="access_stock_lot_cost_line_admin">
+            <field name="model"
+                search="[('model', '=', 'stock.lot.cost_line')]"/>
+            <field name="group" ref="stock.group_stock_admin"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_delete" eval="True"/>
+        </record>
+
+        <!-- stock.lot -->
+        <record model="ir.ui.view" id="lot_view_form">
+            <field name="model">stock.lot</field>
+            <field name="inherit" ref="stock_lot.lot_view_form"/>
+            <field name="name">lot_form</field>
+        </record>
+
+        <!-- Menus -->
+        <menuitem id="menu_stock_lot_cost_category"
+            action="act_stock_lot_cost_category"
+            parent="stock.menu_configuration" sequence="50"/>
+    </data>
+    <data noupdate="1">
+
+        <record model="stock.lot.cost_category" id="cost_category_standard_price">
+            <field name="name">Standard Price</field>
+        </record>
+    </data>
+</tryton>

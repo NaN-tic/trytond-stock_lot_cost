@@ -1,0 +1,6 @@
+<tree string="Stock Lot Cost Line">
+    <field name="lot"/>
+    <field name="category"/>
+    <field name="unit_price"/>
+    <field name="origin"/>
+</tree>
