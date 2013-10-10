@@ -19,7 +19,6 @@
         <record model="ir.action.act_window" id="act_stock_lot_cost_category">
             <field name="name">Lot Cost Category</field>
             <field name="res_model">stock.lot.cost_category</field>
-            <field name="search_value"></field>
         </record>
         <record model="ir.action.act_window.view"
             id="act_stock_lot_cost_category_view1">
@@ -70,7 +69,6 @@
         <record model="ir.action.act_window" id="act_stock_lot_cost_line">
             <field name="name">Stock Lot Cost Line</field>
             <field name="res_model">stock.lot.cost_line</field>
-            <field name="search_value"></field>
         </record>
         <record model="ir.action.act_window.view"
             id="act_stock_lot_cost_line_view1">

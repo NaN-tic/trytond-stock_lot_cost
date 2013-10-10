@@ -32,8 +32,25 @@ class LotCostLine(ModelSQL, ModelView):
     category = fields.Many2One('stock.lot.cost_category', 'Category',
         required=True)
     unit_price = fields.Numeric('Unit Price', digits=(16, 4), required=True)
-    origin = fields.Many2One('stock.move', 'Origin', readonly=True,
+    origin = fields.Reference('Origin', selection='get_origin', readonly=True,
         select=True)
+
+    @classmethod
+    def _get_origin(cls):
+        'Return list of Model names for origin Reference'
+        return [
+            'stock.move',
+            ]
+
+    @classmethod
+    def get_origin(cls):
+        pool = Pool()
+        Model = pool.get('ir.model')
+        models = cls._get_origin()
+        models = Model.search([
+                ('model', 'in', models),
+                ])
+        return [('', '')] + [(m.model, m.name) for m in models]
 
 
 class Lot:
