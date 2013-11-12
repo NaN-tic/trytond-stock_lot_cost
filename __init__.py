@@ -2,7 +2,6 @@
 #copyright notices and license terms.
 
 from trytond.pool import Pool
-#from .product import *
 from .stock import *
 
 
@@ -12,5 +11,4 @@ def register():
         LotCostLine,
         Lot,
         Move,
-        #Product,
         module='stock_lot_cost', type_='model')
