@@ -1,0 +1,115 @@
+# 
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "error:stock.lot.cost_category:"
+msgid "The Name of the Lot Cost Category must be unique."
+msgstr "El nom de la categoria del cost del lot ha de ser únic."
+
+msgctxt "field:stock.lot,cost_lines:"
+msgid "Cost Lines"
+msgstr "Linies de cost"
+
+msgctxt "field:stock.lot,cost_price:"
+msgid "Cost Price"
+msgstr "Preu de cost"
+
+msgctxt "field:stock.lot.cost_category,create_date:"
+msgid "Create Date"
+msgstr "Data creació"
+
+msgctxt "field:stock.lot.cost_category,create_uid:"
+msgid "Create User"
+msgstr "Usuari creació"
+
+msgctxt "field:stock.lot.cost_category,id:"
+msgid "ID"
+msgstr "Identificador"
+
+msgctxt "field:stock.lot.cost_category,name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:stock.lot.cost_category,rec_name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:stock.lot.cost_category,write_date:"
+msgid "Write Date"
+msgstr "Data modificació"
+
+msgctxt "field:stock.lot.cost_category,write_uid:"
+msgid "Write User"
+msgstr "Usuari modificació"
+
+msgctxt "field:stock.lot.cost_line,category:"
+msgid "Category"
+msgstr "Categoria"
+
+msgctxt "field:stock.lot.cost_line,create_date:"
+msgid "Create Date"
+msgstr "Data creació"
+
+msgctxt "field:stock.lot.cost_line,create_uid:"
+msgid "Create User"
+msgstr "Usuari creació"
+
+msgctxt "field:stock.lot.cost_line,id:"
+msgid "ID"
+msgstr "Identificador"
+
+msgctxt "field:stock.lot.cost_line,lot:"
+msgid "Lot"
+msgstr "Lot"
+
+msgctxt "field:stock.lot.cost_line,origin:"
+msgid "Origin"
+msgstr "Origen"
+
+msgctxt "field:stock.lot.cost_line,rec_name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:stock.lot.cost_line,unit_price:"
+msgid "Unit Price"
+msgstr "Preu unitat"
+
+msgctxt "field:stock.lot.cost_line,write_date:"
+msgid "Write Date"
+msgstr "Data modificació"
+
+msgctxt "field:stock.lot.cost_line,write_uid:"
+msgid "Write User"
+msgstr "Usuari modificació"
+
+msgctxt "model:ir.action,name:act_stock_lot_cost_category"
+msgid "Lot Cost Category"
+msgstr "Categoria cost del lot"
+
+msgctxt "model:ir.action,name:act_stock_lot_cost_line"
+msgid "Stock Lot Cost Line"
+msgstr "Linia cost del lot"
+
+msgctxt "model:ir.ui.menu,name:menu_stock_lot_cost_category"
+msgid "Lot Cost Category"
+msgstr "Categoria cost del lot"
+
+msgctxt "model:stock.lot.cost_category,name:"
+msgid "Stock Lot Cost Category"
+msgstr "Categoria cost del lot"
+
+msgctxt "model:stock.lot.cost_category,name:cost_category_standard_price"
+msgid "Standard Price"
+msgstr "Preu estàndard"
+
+msgctxt "model:stock.lot.cost_line,name:"
+msgid "Stock Lot Cost Line"
+msgstr "Linia cost del lot"
+
+msgctxt "view:stock.lot.cost_category:"
+msgid "Stock Lot Cost Category"
+msgstr "Categoria cost del lot"
+
+msgctxt "view:stock.lot.cost_line:"
+msgid "Stock Lot Cost Line"
+msgstr "Linia cost del lot"
