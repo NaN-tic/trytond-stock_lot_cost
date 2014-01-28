@@ -98,9 +98,13 @@ msgctxt "model:stock.lot.cost_category,name:"
 msgid "Stock Lot Cost Category"
 msgstr "Categoria cost del lot"
 
+msgctxt "model:stock.lot.cost_category,name:cost_category_shipment_cost"
+msgid "Shipment Cost"
+msgstr "Cost enviament"
+
 msgctxt "model:stock.lot.cost_category,name:cost_category_standard_price"
 msgid "Standard Price"
-msgstr "Preu estàndard"
+msgstr "Preu estàndar"
 
 msgctxt "model:stock.lot.cost_line,name:"
 msgid "Stock Lot Cost Line"
