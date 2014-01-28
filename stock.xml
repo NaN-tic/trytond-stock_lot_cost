@@ -115,9 +115,13 @@
             parent="stock.menu_configuration" sequence="50"/>
     </data>
     <data noupdate="1">
-
-        <record model="stock.lot.cost_category" id="cost_category_standard_price">
+        <record model="stock.lot.cost_category"
+                id="cost_category_standard_price">
             <field name="name">Standard Price</field>
+        </record>
+        <record model="stock.lot.cost_category"
+                id="cost_category_shipment_cost">
+            <field name="name">Shipment Cost</field>
         </record>
     </data>
 </tryton>
