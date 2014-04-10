@@ -1,10 +1,14 @@
-#The COPYRIGHT file at the top level of this repository contains the full
-#copyright notices and license terms.
+# The COPYRIGHT file at the top level of this repository contains the full
+# copyright notices and license terms.
+from decimal import Decimal
+
 from trytond.model import ModelSQL, ModelView, fields
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
+from trytond.transaction import Transaction
 
-__all__ = ['LotCostCategory', 'LotCostLine', 'Lot', 'Move']
+__all__ = ['LotCostCategory', 'LotCostLine', 'Lot', 'Move', 'Product',
+    'Location']
 __metaclass__ = PoolMeta
 
 
@@ -70,7 +74,8 @@ class Lot:
         cls.product.on_change.append('cost_lines')
 
     def get_cost_price(self, name):
-        return sum(l.unit_price for l in self.cost_lines)
+        return (sum(l.unit_price for l in self.cost_lines)
+            if self.cost_lines else None)
 
     def on_change_product(self):
         try:
@@ -94,9 +99,9 @@ class Lot:
             'cost_category_standard_price')
         return {
             'add': [{
-                    'category': category_id,
-                    'unit_price': self.product.cost_price,
-                    }],
+                        'category': category_id,
+                        'unit_price': self.product.cost_price,
+                        }],
             }
 
 
@@ -107,3 +112,96 @@ class Move:
     def __setup__(cls):
         super(Move, cls).__setup__()
         cls.lot.context['from_move'] = Eval('id')
+
+
+class Product:
+    __name__ = 'product.product'
+
+    @classmethod
+    def get_cost_value(cls, products, name):
+        pool = Pool()
+        Lot = pool.get('stock.lot')
+
+        product_by_id = dict((p.id, p) for p in products)
+        cost_values = {}.fromkeys(product_by_id.keys(), None)
+
+        context = {}
+        trans_context = Transaction().context
+        if 'stock_date_end' in context:
+            context['_datetime'] = trans_context['stock_date_end']
+        location_ids = trans_context.get('locations')
+        with Transaction().set_context(context):
+            pbl = cls.products_by_location(location_ids=location_ids,
+                product_ids=product_by_id.keys(), with_childs=True,
+                grouping=('product', 'lot'))
+
+            for (location_id, product_id, lot_id), qty in pbl.iteritems():
+                cost_value = None
+                if lot_id:
+                    lot = Lot(lot_id)
+                    if isinstance(lot.cost_price, Decimal):
+                        cost_value = (Decimal(str(qty)) * lot.cost_price)
+                else:
+                    product = product_by_id[product_id]
+                    if isinstance(product.cost_price, Decimal):
+                        cost_value = (Decimal(str(qty)) * product.cost_price)
+
+                if cost_value is not None:
+                    if cost_values[product_id] is not None:
+                        cost_value += cost_values[product_id]
+                    cost_values[product_id] = cost_value
+        return cost_values
+
+
+class Location:
+    __name__ = 'stock.location'
+
+    @classmethod
+    def get_cost_value(cls, locations, name):
+        pool = Pool()
+        Lot = pool.get('stock.lot')
+        Product = pool.get('product.product')
+
+        trans_context = Transaction().context
+        product_id = trans_context.get('product')
+        lot_id = trans_context.get('lot')
+        if not product_id and not lot_id:
+            return dict((l.id, None) for l in locations)
+
+        cost_values, context = {}, {}
+        if 'stock_date_end' in context:
+            context['_datetime'] = trans_context['stock_date_end']
+        with Transaction().set_context(context):
+            if lot_id:
+                lot = Lot(lot_id)
+                for location in locations:
+                    # The date could be before the product creation
+                    if not isinstance(lot.cost_price, Decimal):
+                        cost_values[location.id] = None
+                    else:
+                        cost_values[location.id] = (
+                            Decimal(str(location.quantity)) * lot.cost_price)
+            else:
+                product = Product(product_id)
+                pbl = cls.products_by_location(
+                    location_ids=[l.id for l in locations],
+                    product_ids=[product_id], with_childs=True,
+                    grouping=('product', 'lot'))
+
+                cost_values = dict((l.id, None) for l in locations)
+                for (location_id, product_id, lot_id), qty in pbl.iteritems():
+                    cost_value = None
+                    if lot_id:
+                        lot = Lot(lot_id)
+                        if isinstance(lot.cost_price, Decimal):
+                            cost_value = (Decimal(str(qty)) * lot.cost_price)
+                    else:
+                        if isinstance(product.cost_price, Decimal):
+                            cost_value = (Decimal(str(qty))
+                                * product.cost_price)
+
+                    if cost_value is not None:
+                        if cost_values[location_id] is not None:
+                            cost_value += cost_values[location_id]
+                        cost_values[location_id] = cost_value
+        return cost_values
