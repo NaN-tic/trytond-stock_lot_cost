@@ -1,14 +1,6 @@
 #!/usr/bin/env python
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
-
-import sys
-import os
-DIR = os.path.abspath(os.path.normpath(os.path.join(__file__,
-    '..', '..', '..', '..', '..', 'trytond')))
-if os.path.isdir(DIR):
-    sys.path.insert(0, os.path.dirname(DIR))
-
 import unittest
 from decimal import Decimal
 
@@ -78,8 +70,9 @@ class TestCase(unittest.TestCase):
 
             # Lot.product.on_change test
             lot_vals = lot.on_change_product()
-            lot_vals['cost_lines'] = [(k.replace('add', 'create'), v)
-                for (k, v) in lot_vals['cost_lines'].items()]
+            lot_vals['cost_lines'] = [(k.replace('add', 'create'), [value])
+                for (k, v) in lot_vals['cost_lines'].iteritems()
+                for _, value in v]
             self.lot.write([lot], lot_vals)
             self.assertEqual(lot.cost_price, template.cost_price)
 
@@ -99,6 +92,3 @@ def suite():
     suite = trytond.tests.test_tryton.suite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestCase))
     return suite
-
-if __name__ == '__main__':
-    unittest.TextTestRunner(verbosity=2).run(suite())

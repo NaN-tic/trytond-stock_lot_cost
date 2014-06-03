@@ -64,19 +64,11 @@ class Lot:
     cost_price = fields.Function(fields.Numeric('Cost Price', digits=(16, 4)),
         'get_cost_price')
 
-    @classmethod
-    def __setup__(cls):
-        super(Lot, cls).__setup__()
-        if not cls.product.on_change:
-            cls.product.on_change = []
-        if 'product' not in cls.product.on_change:
-            cls.product.on_change.append('product')
-        cls.product.on_change.append('cost_lines')
-
     def get_cost_price(self, name):
         return (sum(l.unit_price for l in self.cost_lines)
             if self.cost_lines else None)
 
+    @fields.depends('product', 'cost_lines')
     def on_change_product(self):
         try:
             result = super(Lot, self).on_change_product()
@@ -98,10 +90,10 @@ class Lot:
         category_id = ModelData.get_id('stock_lot_cost',
             'cost_category_standard_price')
         return {
-            'add': [{
+            'add': [(0, {
                         'category': category_id,
                         'unit_price': self.product.cost_price,
-                        }],
+                        })],
             }
 
 
