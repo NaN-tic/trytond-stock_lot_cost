@@ -183,7 +183,7 @@ class Location:
                             Decimal(str(location.quantity)) * lot.cost_price)
             else:
                 product = Product(product_id)
-                pbl = cls.products_by_location(
+                pbl = Product.products_by_location(
                     location_ids=[l.id for l in locations],
                     product_ids=[product_id], with_childs=True,
                     grouping=('product', 'lot'))
