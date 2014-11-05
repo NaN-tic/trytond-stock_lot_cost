@@ -11,9 +11,7 @@ from trytond.transaction import Transaction
 
 
 class TestCase(unittest.TestCase):
-    '''
-    Test module.
-    '''
+    'Test module'
 
     def setUp(self):
         trytond.tests.test_tryton.install_module('stock_lot_cost')
@@ -26,21 +24,15 @@ class TestCase(unittest.TestCase):
         self.lot_cost_line = POOL.get('stock.lot.cost_line')
 
     def test0005views(self):
-        '''
-        Test views.
-        '''
+        'Test views'
         test_view('stock_lot_cost')
 
     def test0006depends(self):
-        '''
-        Test depends.
-        '''
+        'Test depends'
         test_depends()
 
     def test0010lot_cost_price(self):
-        '''
-        Test Lot.cost_price.
-        '''
+        'Test Lot.cost_price'
         with Transaction().start(DB_NAME, USER, context=CONTEXT):
             category, = self.category.create([{
                         'name': 'Test Lot.cost_price',
