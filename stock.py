@@ -183,7 +183,10 @@ class Location:
                     grouping=('product', 'lot'))
 
                 cost_values = dict((l.id, None) for l in locations)
-                for (location_id, product_id, lot_id), qty in pbl.iteritems():
+                for key, qty in pbl.iteritems():
+                    if len(key) != 3:
+                        continue
+                    location_id, product_id, lot_id = key
                     cost_value = None
                     if lot_id:
                         lot = Lot(lot_id)
