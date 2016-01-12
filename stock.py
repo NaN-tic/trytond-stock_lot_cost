@@ -6,8 +6,7 @@ from trytond.model import ModelSQL, ModelView, fields
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
 from trytond.transaction import Transaction
-from trytond.config import config
-DIGITS = int(config.get('digits', 'unit_price_digits', 4))
+from trytond.modules.product import price_digits
 
 __all__ = ['LotCostCategory', 'LotCostLine', 'Lot', 'Move', 'Product',
     'Location']
@@ -37,7 +36,7 @@ class LotCostLine(ModelSQL, ModelView):
         ondelete='CASCADE')
     category = fields.Many2One('stock.lot.cost_category', 'Category',
         required=True)
-    unit_price = fields.Numeric('Unit Price', digits=(16, DIGITS), required=True)
+    unit_price = fields.Numeric('Unit Price', digits=price_digits, required=True)
     origin = fields.Reference('Origin', selection='get_origin', readonly=True,
         select=True)
 
@@ -63,7 +62,8 @@ class Lot:
     __name__ = 'stock.lot'
 
     cost_lines = fields.One2Many('stock.lot.cost_line', 'lot', 'Cost Lines')
-    cost_price = fields.Function(fields.Numeric('Cost Price', digits=(16, DIGITS)),
+    cost_price = fields.Function(fields.Numeric('Cost Price',
+            digits=price_digits),
         'get_cost_price')
 
     def get_cost_price(self, name):
