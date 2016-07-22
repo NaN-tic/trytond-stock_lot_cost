@@ -75,14 +75,13 @@ class Lot:
     @fields.depends('product', 'cost_lines')
     def on_change_product(self):
         try:
-            result = super(Lot, self).on_change_product()
+            super(Lot, self).on_change_product()
         except AttributeError:
-            result = {}
+            pass
 
         cost_lines = self._on_change_product_cost_lines()
         if cost_lines:
-            result['cost_lines'] = cost_lines
-        return result
+            self.cost_lines = cost_lines
 
     def _on_change_product_cost_lines(self):
         pool = Pool()
