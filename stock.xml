@@ -82,7 +82,7 @@
             <field name="act_window" ref="act_stock_lot_cost_line"/>
         </record>
 
-        <record model="ir.model.access" id="access_stock_lot_cost_line">
+        <record model="ir.model.access" id="access_stock_lot_cost_line_default">
             <field name="model"
                 search="[('model', '=', 'stock.lot.cost_line')]"/>
             <field name="perm_read" eval="True"/>
