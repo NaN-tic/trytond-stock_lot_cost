@@ -36,7 +36,6 @@
         <record model="ir.model.access" id="access_stock_lot_cost_category">
             <field name="model"
                 search="[('model', '=', 'stock.lot.cost_category')]"/>
-            <field name="group" ref="stock.group_stock"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="False"/>
             <field name="perm_create" eval="False"/>
@@ -83,6 +82,14 @@
             <field name="act_window" ref="act_stock_lot_cost_line"/>
         </record>
 
+        <record model="ir.model.access" id="access_stock_lot_cost_line">
+            <field name="model"
+                search="[('model', '=', 'stock.lot.cost_line')]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_delete" eval="False"/>
+        </record>
         <record model="ir.model.access" id="access_stock_lot_cost_line">
             <field name="model"
                 search="[('model', '=', 'stock.lot.cost_line')]"/>
