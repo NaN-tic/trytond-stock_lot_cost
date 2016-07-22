@@ -2,7 +2,7 @@
 # copyright notices and license terms.
 from decimal import Decimal
 
-from trytond.model import ModelSQL, ModelView, fields
+from trytond.model import ModelSQL, ModelView, Unique, fields
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
 from trytond.transaction import Transaction
@@ -22,8 +22,9 @@ class LotCostCategory(ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(LotCostCategory, cls).__setup__()
+        t = cls.__table__()
         cls._sql_constraints += [
-            ('name_uniq', 'UNIQUE (name)',
+            ('name_uniq', Unique(t, t.name),
                 'The Name of the Lot Cost Category must be unique.'),
             ]
 
@@ -36,7 +37,8 @@ class LotCostLine(ModelSQL, ModelView):
         ondelete='CASCADE')
     category = fields.Many2One('stock.lot.cost_category', 'Category',
         required=True)
-    unit_price = fields.Numeric('Unit Price', digits=price_digits, required=True)
+    unit_price = fields.Numeric('Unit Price', digits=price_digits,
+        required=True)
     origin = fields.Reference('Origin', selection='get_origin', readonly=True,
         select=True)
 
