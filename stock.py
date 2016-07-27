@@ -81,7 +81,14 @@ class Lot:
 
         cost_lines = self._on_change_product_cost_lines()
         if cost_lines:
-            self.cost_lines = cost_lines
+            cost_lines = cost_lines.get('add')
+            LotCostLine = Pool().get('stock.lot.cost_line')
+            lot_cost_lines = LotCostLine.search([
+                    ('category', '=', cost_lines[0][1]['category']),
+                    ('unit_price', '=', cost_lines[0][1]['unit_price']),
+                    ])
+            if lot_cost_lines:
+                self.cost_lines = lot_cost_lines
 
     def _on_change_product_cost_lines(self):
         pool = Pool()
