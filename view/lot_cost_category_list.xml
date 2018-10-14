@@ -1,3 +1,3 @@
-<tree string="Stock Lot Cost Category">
+<tree>
     <field name="name"/>
 </tree>

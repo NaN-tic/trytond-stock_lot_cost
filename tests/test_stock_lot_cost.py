@@ -65,7 +65,7 @@ class TestCase(ModuleTestCase):
                     'category': lot_cost_category_id,
                     'unit_price': Decimal(2),
                     }])
-        self.assertEqual(lot.cost_price, Decimal(15))
+        self.assertEqual(lot.cost_price, Decimal(5))
 
 
 def suite():
