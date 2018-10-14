@@ -10,7 +10,6 @@ from trytond.modules.product import price_digits
 
 __all__ = ['LotCostCategory', 'LotCostLine', 'Lot', 'Move', 'Product',
     'Location']
-__metaclass__ = PoolMeta
 
 
 class LotCostCategory(ModelSQL, ModelView):
@@ -60,7 +59,7 @@ class LotCostLine(ModelSQL, ModelView):
         return [('', '')] + [(m.model, m.name) for m in models]
 
 
-class Lot:
+class Lot(metaclass=PoolMeta):
     __name__ = 'stock.lot'
 
     cost_lines = fields.One2Many('stock.lot.cost_line', 'lot', 'Cost Lines')
@@ -107,7 +106,7 @@ class Lot:
             }
 
 
-class Move:
+class Move(metaclass=PoolMeta):
     __name__ = 'stock.move'
 
     @classmethod
@@ -116,7 +115,7 @@ class Move:
         cls.lot.context['from_move'] = Eval('id')
 
 
-class Product:
+class Product(metaclass=PoolMeta):
     __name__ = 'product.product'
 
     @classmethod
@@ -137,7 +136,7 @@ class Product:
                 product_ids=product_by_id.keys(), with_childs=True,
                 grouping=('product', 'lot'))
 
-            for (location_id, product_id, lot_id), qty in pbl.iteritems():
+            for (location_id, product_id, lot_id), qty in pbl.items():
                 cost_value = None
                 if lot_id:
                     lot = Lot(lot_id)
@@ -155,7 +154,7 @@ class Product:
         return cost_values
 
 
-class Location:
+class Location(metaclass=PoolMeta):
     __name__ = 'stock.location'
 
     @classmethod
@@ -191,7 +190,7 @@ class Location:
                     grouping=('product', 'lot'))
 
                 cost_values = dict((l.id, None) for l in locations)
-                for key, qty in pbl.iteritems():
+                for key, qty in pbl.items():
                     if len(key) != 3:
                         continue
                     location_id, product_id, lot_id = key
