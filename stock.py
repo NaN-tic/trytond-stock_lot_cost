@@ -186,7 +186,7 @@ class Location(metaclass=PoolMeta):
                 product = Product(product_id)
                 pbl = Product.products_by_location(
                     location_ids=[l.id for l in locations],
-                    grouping_filter=[product_id], with_childs=True,
+                    grouping_filter=([product_id],), with_childs=True,
                     grouping=('product', 'lot'))
 
                 cost_values = dict((l.id, None) for l in locations)
