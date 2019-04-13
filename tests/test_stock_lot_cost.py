@@ -30,12 +30,12 @@ class TestCase(ModuleTestCase):
                     'name': 'Test Lot.cost_price',
                     'type': 'goods',
                     'list_price': Decimal(20),
-                    'cost_price': Decimal(10),
                     'cost_price_method': 'fixed',
                     'default_uom': kg.id,
                     }])
         product, = Product.create([{
                     'template': template.id,
+                    'cost_price': Decimal(10),
                     }])
         lot_cost_category_id = ModelData.get_id('stock_lot_cost',
             'cost_category_standard_price')
@@ -65,7 +65,7 @@ class TestCase(ModuleTestCase):
                     'category': lot_cost_category_id,
                     'unit_price': Decimal(2),
                     }])
-        self.assertEqual(lot.cost_price, Decimal(5))
+        self.assertEqual(lot.cost_price, Decimal(15))
 
 
 def suite():
