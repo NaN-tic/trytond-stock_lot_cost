@@ -98,7 +98,7 @@ class Lot(metaclass=PoolMeta):
         ModelData = pool.get('ir.model.data')
 
         if not self.product:
-            return None
+            return {}
 
         category_id = ModelData.get_id('stock_lot_cost',
             'cost_category_standard_price')
