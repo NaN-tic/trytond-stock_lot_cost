@@ -24,7 +24,7 @@ class LotCostCategory(ModelSQL, ModelView):
         t = cls.__table__()
         cls._sql_constraints += [
             ('name_uniq', Unique(t, t.name),
-                'The Name of the Lot Cost Category must be unique.'),
+                'stock_lot_cost.msg_category_name_unique'),
             ]
 
 
