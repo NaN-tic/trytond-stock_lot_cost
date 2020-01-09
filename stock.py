@@ -65,8 +65,9 @@ class Lot(metaclass=PoolMeta):
         'get_cost_price')
 
     def get_cost_price(self, name):
-        return (sum(l.unit_price or 0 for l in self.cost_lines)
-            if self.cost_lines else None)
+        if not self.cost_lines:
+            return
+        return sum(l.unit_price for l in self.cost_lines)
 
     @fields.depends('product', 'cost_lines')
     def on_change_product(self):
