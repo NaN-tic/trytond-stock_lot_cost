@@ -136,7 +136,7 @@ class Product(metaclass=PoolMeta):
         location_ids = trans_context.get('locations')
         with Transaction().set_context(context):
             pbl = cls.products_by_location(location_ids=location_ids,
-                grouping_filter=(product_by_id.keys(),), with_childs=True,
+                grouping_filter=(list(product_by_id.keys()),), with_childs=True,
                 grouping=('product', 'lot'))
 
             for (location_id, product_id, lot_id), qty in pbl.items():
