@@ -7,9 +7,6 @@ from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
 from trytond.transaction import Transaction
 
-__all__ = ['LotCostCategory', 'LotCostLine', 'Lot', 'Move', 'Product',
-    'Location']
-
 
 class LotCostCategory(ModelSQL, ModelView):
     '''Stock Lot Cost Category'''
