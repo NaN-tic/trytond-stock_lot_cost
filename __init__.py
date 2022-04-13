@@ -11,6 +11,4 @@ def register():
         LotCostLine,
         Lot,
         Move,
-        # Product,
-        # Location,
         module='stock_lot_cost', type_='model')
