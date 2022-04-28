@@ -1,19 +1,19 @@
-#!/usr/bin/env python
-# The COPYRIGHT file at the top level of this repository contains the full
-# copyright notices and license terms.
-import unittest
+
+# This file is part of Tryton.  The COPYRIGHT file at the top level of
+# this repository contains the full copyright notices and license terms.
+
 from decimal import Decimal
 
-import trytond.tests.test_tryton
 from trytond.pool import Pool
 from trytond.tests.test_tryton import ModuleTestCase, with_transaction
-from trytond.modules.company.tests import create_company, set_company
+from trytond.modules.company.tests import (CompanyTestMixin, create_company,
+    set_company)
 
 
-class TestCase(ModuleTestCase):
-    'Test module'
+class StockLotCostTestCase(CompanyTestMixin, ModuleTestCase):
+    'Test StockLotCost module'
     module = 'stock_lot_cost'
-
+    
     @with_transaction()
     def test0010lot_cost_price(self):
         'Test Lot.cost_price'
@@ -71,7 +71,4 @@ class TestCase(ModuleTestCase):
             self.assertEqual(lot.cost_price, Decimal(15))
 
 
-def suite():
-    suite = trytond.tests.test_tryton.suite()
-    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestCase))
-    return suite
+del ModuleTestCase
