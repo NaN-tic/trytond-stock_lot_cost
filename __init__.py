@@ -9,6 +9,4 @@ def register():
         stock.LotCostLine,
         stock.Lot,
         stock.Move,
-        stock.Product,
-        stock.Location,
         module='stock_lot_cost', type_='model')
