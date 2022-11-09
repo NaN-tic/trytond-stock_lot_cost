@@ -27,13 +27,12 @@ class LotCostLine(ModelSQL, ModelView):
     '''Stock Lot Cost Line'''
     __name__ = 'stock.lot.cost_line'
 
-    lot = fields.Many2One('stock.lot', 'Lot', required=True, select=True,
+    lot = fields.Many2One('stock.lot', 'Lot', required=True,
         ondelete='CASCADE')
     category = fields.Many2One('stock.lot.cost_category', 'Category',
         required=True)
     unit_price = fields.Numeric('Unit Price', required=True)
-    origin = fields.Reference('Origin', selection='get_origin', readonly=True,
-        select=True)
+    origin = fields.Reference('Origin', selection='get_origin', readonly=True)
 
     @classmethod
     def _get_origin(cls):
