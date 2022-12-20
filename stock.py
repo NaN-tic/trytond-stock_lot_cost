@@ -136,3 +136,4 @@ class Move(metaclass=PoolMeta):
                         })
 
         LotCostLine.create(to_save_lot_cost_line)
+        super(Move, cls).write(*args)
