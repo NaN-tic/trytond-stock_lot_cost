@@ -112,3 +112,27 @@ class Move(metaclass=PoolMeta):
     def __setup__(cls):
         super(Move, cls).__setup__()
         cls.lot.context['from_move'] = Eval('id')
+
+    @classmethod
+    def write(cls, *args):
+        pool = Pool()
+        ModelData = pool.get('ir.model.data')
+        LotCostLine = pool.get('stock.lot.cost_line')
+        actions = iter(args)
+
+        to_save_lot_cost_line = []
+        for moves, values in zip(actions, actions):
+            if 'unit_price' in values:
+                default_category_id = ModelData.get_id('stock_lot_cost',
+                    'cost_category_standard_price')
+
+                for move in moves:
+                    if move.lot:
+                        to_save_lot_cost_line.append({
+                            'lot': move.lot,
+                            'category': default_category_id,
+                            'unit_price': values['unit_price'],
+                            'origin': 'stock.move,%s' % move.id
+                        })
+
+        LotCostLine.create(to_save_lot_cost_line)
