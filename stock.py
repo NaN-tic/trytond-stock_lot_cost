@@ -121,6 +121,7 @@ class Move(metaclass=PoolMeta):
         actions = iter(args)
 
         to_save_lot_cost_line = []
+        to_delete_lot_cost_line = []
         for moves, values in zip(actions, actions):
             if 'unit_price' in values:
                 default_category_id = ModelData.get_id('stock_lot_cost',
@@ -128,6 +129,9 @@ class Move(metaclass=PoolMeta):
 
                 for move in moves:
                     if move.lot:
+                        to_delete_lot_cost_line += LotCostLine.search([
+                            ('lot', '=', move.lot)])
+
                         to_save_lot_cost_line.append({
                             'lot': move.lot,
                             'category': default_category_id,
@@ -135,5 +139,6 @@ class Move(metaclass=PoolMeta):
                             'origin': 'stock.move,%s' % move.id
                         })
 
+        LotCostLine.delete(list(set(to_delete_lot_cost_line)))
         LotCostLine.create(to_save_lot_cost_line)
         super(Move, cls).write(*args)
