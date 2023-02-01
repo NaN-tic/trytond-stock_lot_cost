@@ -129,16 +129,20 @@ class Move(metaclass=PoolMeta):
 
                 for move in moves:
                     if move.lot:
+                        unit_price = (((Decimal(move.quantity)*values['unit_price']) +
+                            (Decimal(move.lot.quantity)*move.lot.cost_price))/(
+                                Decimal(move.quantity+move.lot.quantity)))
+
                         to_delete_lot_cost_line += LotCostLine.search([
                             ('lot', '=', move.lot)])
 
                         to_save_lot_cost_line.append({
                             'lot': move.lot,
                             'category': default_category_id,
-                            'unit_price': values['unit_price'],
+                            'unit_price': unit_price,
                             'origin': 'stock.move,%s' % move.id
                         })
 
         LotCostLine.delete(list(set(to_delete_lot_cost_line)))
         LotCostLine.create(to_save_lot_cost_line)
-        super(Move, cls).write(*args)
+        super().write(*args)
