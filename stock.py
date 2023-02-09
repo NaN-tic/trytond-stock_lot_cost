@@ -61,7 +61,7 @@ class Lot(metaclass=PoolMeta):
         'get_cost_price')
 
     def get_cost_price(self, name):
-        if not self.cost_lines:
+        if not self.cost_lines or self.quantity == 0:
             return
         return sum(l.unit_price for l in self.cost_lines if l.unit_price is not
             None)
@@ -114,35 +114,34 @@ class Move(metaclass=PoolMeta):
         cls.lot.context['from_move'] = Eval('id')
 
     @classmethod
-    def write(cls, *args):
+    def do(cls, moves):
         pool = Pool()
         ModelData = pool.get('ir.model.data')
         LotCostLine = pool.get('stock.lot.cost_line')
-        actions = iter(args)
+
+        super(Move, cls).do(moves)
 
         to_save_lot_cost_line = []
         to_delete_lot_cost_line = []
-        for moves, values in zip(actions, actions):
-            if 'unit_price' in values:
+        for move in moves:
+            if move.lot and move.unit_price:
                 default_category_id = ModelData.get_id('stock_lot_cost',
                     'cost_category_standard_price')
+                if (move.quantity+move.lot.quantity) == 0:
+                    # If we dont have stock left, use unit_price = 0
+                    unit_price = Decimal(0)
+                else:
+                    unit_price = (((Decimal(move.quantity)*(move.unit_price or 0)) +
+                        (Decimal(move.lot.quantity)*(move.lot.cost_price or 0)))/(
+                            Decimal(move.quantity+move.lot.quantity)))
+                to_delete_lot_cost_line += LotCostLine.search([
+                    ('lot', '=', move.lot)])
 
-                for move in moves:
-                    if move.lot:
-                        unit_price = (((Decimal(move.quantity)*values['unit_price']) +
-                            (Decimal(move.lot.quantity)*move.lot.cost_price))/(
-                                Decimal(move.quantity+move.lot.quantity)))
-
-                        to_delete_lot_cost_line += LotCostLine.search([
-                            ('lot', '=', move.lot)])
-
-                        to_save_lot_cost_line.append({
-                            'lot': move.lot,
-                            'category': default_category_id,
-                            'unit_price': unit_price,
-                            'origin': 'stock.move,%s' % move.id
-                        })
-
+                to_save_lot_cost_line.append({
+                    'lot': move.lot,
+                    'category': default_category_id,
+                    'unit_price': unit_price,
+                    'origin': 'stock.move,%s' % move.id
+                })
         LotCostLine.delete(list(set(to_delete_lot_cost_line)))
         LotCostLine.create(to_save_lot_cost_line)
-        super().write(*args)

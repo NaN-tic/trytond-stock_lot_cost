@@ -13,7 +13,7 @@ from trytond.modules.company.tests import (CompanyTestMixin, create_company,
 class StockLotCostTestCase(CompanyTestMixin, ModuleTestCase):
     'Test StockLotCost module'
     module = 'stock_lot_cost'
-    
+
     @with_transaction()
     def test0010lot_cost_price(self):
         'Test Lot.cost_price'
