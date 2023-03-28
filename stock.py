@@ -128,12 +128,14 @@ class Move(metaclass=PoolMeta):
                 default_category_id = ModelData.get_id('stock_lot_cost',
                     'cost_category_standard_price')
                 if (move.quantity+move.lot.quantity) == 0:
-                    # If we dont have stock left, use unit_price = 0
-                    unit_price = Decimal(0)
+                    # If we dont have stock left, we need to calculate the unit
+                    # price with the absolute value of the move quantity
+                    quantity = Decimal(abs(move.quantity))
                 else:
-                    unit_price = (((Decimal(move.quantity)*(move.unit_price or 0)) +
-                        (Decimal(move.lot.quantity)*(move.lot.cost_price or 0)))/(
-                            Decimal(move.quantity+move.lot.quantity)))
+                    quantity = Decimal(move.quantity+move.lot.quantity)
+                unit_price = (((Decimal(move.quantity)*(move.unit_price or 0)) +
+                    (Decimal(move.lot.quantity)*(move.lot.cost_price or 0)))/(
+                        quantity))
                 to_delete_lot_cost_line += LotCostLine.search([
                     ('lot', '=', move.lot)])
 
