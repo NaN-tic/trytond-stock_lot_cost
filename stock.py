@@ -23,86 +23,46 @@ class LotCostCategory(ModelSQL, ModelView):
             ]
 
 
-class LotCostLine(ModelSQL, ModelView):
-    '''Stock Lot Cost Line'''
-    __name__ = 'stock.lot.cost_line'
-
-    lot = fields.Many2One('stock.lot', 'Lot', required=True, select=True,
-        ondelete='CASCADE')
-    category = fields.Many2One('stock.lot.cost_category', 'Category',
-        required=True)
-    unit_price = fields.Numeric('Unit Price', required=True)
-    origin = fields.Reference('Origin', selection='get_origin', readonly=True,
-        select=True)
-
-    @classmethod
-    def _get_origin(cls):
-        'Return list of Model names for origin Reference'
-        return [
-            'stock.move',
-            ]
-
-    @classmethod
-    def get_origin(cls):
-        pool = Pool()
-        Model = pool.get('ir.model')
-        models = cls._get_origin()
-        models = Model.search([
-                ('model', 'in', models),
-                ])
-        return [('', '')] + [(m.model, m.name) for m in models]
-
-
 class Lot(metaclass=PoolMeta):
     __name__ = 'stock.lot'
 
-    cost_lines = fields.One2Many('stock.lot.cost_line', 'lot', 'Cost Lines')
-    cost_price = fields.Function(fields.Numeric('Cost Price'),
-        'get_cost_price')
+    cost_price = fields.Function(fields.Numeric("Cost Price"),
+        'get_lot_prices')
+    total_cost = fields.Function(fields.Numeric("Total Cost"),
+        'get_lot_prices')
 
-    def get_cost_price(self, name):
-        if not self.cost_lines or self.quantity == 0:
-            return
-        return sum(l.unit_price for l in self.cost_lines if l.unit_price is not
-            None)
-
-    @fields.depends('product', 'cost_lines')
-    def on_change_product(self):
-        try:
-            super(Lot, self).on_change_product()
-        except AttributeError:
-            pass
-
-        if not self.id or self.id <= 0:
-            return
-
-        cost_lines = self._on_change_product_cost_lines()
-        if cost_lines:
-            cost_lines = cost_lines.get('add')
-            LotCostLine = Pool().get('stock.lot.cost_line')
-            lot_cost_lines = LotCostLine.search([
-                    ('lot', '=', self.id),
-                    ('category', '=', cost_lines[0][1]['category']),
-                    ('unit_price', '=', cost_lines[0][1]['unit_price']),
-                    ])
-            if lot_cost_lines:
-                self.cost_lines = lot_cost_lines
-
-    def _on_change_product_cost_lines(self):
+    @classmethod
+    def get_lot_prices(cls, lots, names):
         pool = Pool()
-        ModelData = pool.get('ir.model.data')
+        Move = pool.get('stock.move')
 
-        if not self.product:
-            return {}
+        res = {}
+        ids = [x.id for x in lots]
 
-        category_id = ModelData.get_id('stock_lot_cost',
-            'cost_category_standard_price')
-        return {
-            'add': [(0, {
-                        'category': category_id,
-                        'unit_price': self.product.cost_price,
-                        })],
-            }
+        for name in ['cost_price', 'total_cost']:
+            res[name] = dict.fromkeys(ids)
+
+        for lot in lots:
+            moves = Move.search([
+                ('lot', '=', lot.id)
+            ])
+
+            total_price = Decimal(sum(
+                    m.unit_price for m in moves if m.unit_price))
+            total_quantity = Decimal(sum(
+                    m.quantity for m in moves if m.quantity))
+
+            res['total_cost'][lot.id] = Decimal(0)
+            res['cost_price'][lot.id] = Decimal(0)
+            if total_price and total_quantity:
+                res['total_cost'][lot.id] = total_price * total_quantity
+                res['cost_price'][lot.id] = (
+                    total_price*total_quantity/total_quantity)
+
+        for name in list(res.keys()):
+            if name not in names:
+                del res[name]
+        return res
 
 
 class Move(metaclass=PoolMeta):
@@ -112,38 +72,3 @@ class Move(metaclass=PoolMeta):
     def __setup__(cls):
         super(Move, cls).__setup__()
         cls.lot.context['from_move'] = Eval('id')
-
-    @classmethod
-    def do(cls, moves):
-        pool = Pool()
-        ModelData = pool.get('ir.model.data')
-        LotCostLine = pool.get('stock.lot.cost_line')
-
-        super(Move, cls).do(moves)
-
-        to_save_lot_cost_line = []
-        to_delete_lot_cost_line = []
-        for move in moves:
-            if move.lot and move.unit_price:
-                default_category_id = ModelData.get_id('stock_lot_cost',
-                    'cost_category_standard_price')
-                if (move.quantity+move.lot.quantity) == 0:
-                    # If we dont have stock left, we need to calculate the unit
-                    # price with the absolute value of the move quantity
-                    quantity = Decimal(abs(move.quantity))
-                else:
-                    quantity = Decimal(move.quantity+move.lot.quantity)
-                unit_price = (((Decimal(move.quantity)*(move.unit_price or 0)) +
-                    (Decimal(move.lot.quantity)*(move.lot.cost_price or 0)))/(
-                        quantity))
-                to_delete_lot_cost_line += LotCostLine.search([
-                    ('lot', '=', move.lot)])
-
-                to_save_lot_cost_line.append({
-                    'lot': move.lot,
-                    'category': default_category_id,
-                    'unit_price': unit_price,
-                    'origin': 'stock.move,%s' % move.id
-                })
-        LotCostLine.delete(list(set(to_delete_lot_cost_line)))
-        LotCostLine.create(to_save_lot_cost_line)
