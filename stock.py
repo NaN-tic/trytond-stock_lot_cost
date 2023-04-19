@@ -43,8 +43,10 @@ class Lot(metaclass=PoolMeta):
             res[name] = dict.fromkeys(ids)
 
         for lot in lots:
+            # Don't search moves where the origin is another move
             moves = Move.search([
-                ('lot', '=', lot.id)
+                ('lot', '=', lot.id),
+                ('origin', 'not like', 'stock.move,%'),
             ])
 
             total_price = Decimal(sum(
