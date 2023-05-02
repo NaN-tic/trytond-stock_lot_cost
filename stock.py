@@ -51,8 +51,14 @@ class Lot(metaclass=PoolMeta):
 
             total_price = Decimal(sum(
                     m.unit_price for m in moves if m.unit_price))
-            total_quantity = Decimal(sum(
-                    m.quantity for m in moves if m.quantity))
+
+            total_quantity = Decimal(0)
+            for move in moves:
+                if move.quantity:
+                    if move.to_location.type not in ['storage']:
+                        total_quantity += Decimal(-move.quantity)
+                    else:
+                        total_quantity += Decimal(move.quantity)
 
             res['total_cost'][lot.id] = Decimal(0)
             res['cost_price'][lot.id] = Decimal(0)
