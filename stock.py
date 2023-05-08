@@ -64,27 +64,21 @@ class Lot(metaclass=PoolMeta):
                 ('to_location.type', '=', 'storage'),
             ])
 
+            total_quantity = Decimal(0)
+            total_price = Decimal(sum(
+                    m.unit_price for m in moves if m.unit_price))
             for k, v in pbl.items():
                 key = k[1:]
                 if key == (lot.product.id, lot.id):
-                    total_price = Decimal(sum(
-                            m.unit_price for m in moves if m.unit_price))
+                    total_quantity += Decimal(v)
 
-                    total_quantity = Decimal(0)
-                    for move in moves:
-                        if move.quantity:
-                            if move.to_location.type not in ['storage']:
-                                total_quantity += Decimal(-move.quantity)
-                            else:
-                                total_quantity += Decimal(move.quantity)
-
-                    res['total_cost'][lot.id] = Decimal(0)
-                    res['cost_price'][lot.id] = Decimal(0)
-                    if total_price and total_quantity:
-                        res['total_cost'][lot.id] = (
-                            total_price * total_quantity)
-                        res['cost_price'][lot.id] = (
-                            total_price*total_quantity/total_quantity)
+            res['total_cost'][lot.id] = Decimal(0)
+            res['cost_price'][lot.id] = Decimal(0)
+            if total_price and total_quantity:
+                res['total_cost'][lot.id] = (
+                    total_price * total_quantity)
+                res['cost_price'][lot.id] = (
+                    total_price*total_quantity/total_quantity)
 
         for name in list(res.keys()):
             if name not in names:
