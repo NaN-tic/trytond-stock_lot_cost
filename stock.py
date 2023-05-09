@@ -1,11 +1,9 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
 from decimal import Decimal
-import datetime
 from trytond.model import ModelSQL, ModelView, Unique, fields
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
-from trytond.transaction import Transaction
 
 
 class LotCostCategory(ModelSQL, ModelView):
@@ -36,49 +34,36 @@ class Lot(metaclass=PoolMeta):
     def get_lot_prices(cls, lots, names):
         pool = Pool()
         Move = pool.get('stock.move')
-        Product = pool.get('product.product')
-        Location = pool.get('stock.location')
 
         res = {}
         ids = [x.id for x in lots]
-
         for name in ['cost_price', 'total_cost']:
             res[name] = dict.fromkeys(ids)
 
-        warehouse_ids = [location.id for location in Location.search(
-            [('type', '=', 'warehouse')])]
-        product_ids = list(set(lot.product.id for lot in lots))
         lot_ids = list(set(lot.id for lot in lots))
-
-        with Transaction().set_context({'stock_date_end': datetime.date.max}):
-            pbl = Product.products_by_location(warehouse_ids,
-                with_childs=True,
-                grouping=('product', 'lot'),
-                grouping_filter=(product_ids, lot_ids))
-
-        for lot in lots:
-            moves = Move.search([
-                ('lot', '=', lot.id),
-                ('origin', 'not like', 'stock.move,%'),
-                ('from_location.type', '=', 'supplier'),
-                ('to_location.type', '=', 'storage'),
+        moves = Move.search([
+            ('lot', 'in', lot_ids),
+            ('origin', 'not like', 'stock.move,%'),
+            ('from_location.type', '=', 'supplier'),
+            ('to_location.type', '=', 'storage'),
+            ('state', '=', 'done'),
             ])
 
-            total_quantity = Decimal(0)
-            total_price = Decimal(sum(
-                    m.unit_price for m in moves if m.unit_price))
-            for k, v in pbl.items():
-                key = k[1:]
-                if key == (lot.product.id, lot.id):
-                    total_quantity += Decimal(v)
+        lot_moves = {}
+        for move in moves:
+            if move.lot.id not in lot_moves:
+                lot_moves[move.lot.id] = []
+            lot_moves[move.lot.id].append(move)
 
-            res['total_cost'][lot.id] = Decimal(0)
-            res['cost_price'][lot.id] = Decimal(0)
-            if total_price and total_quantity:
-                res['total_cost'][lot.id] = (
-                    total_price * total_quantity)
-                res['cost_price'][lot.id] = (
-                    total_price*total_quantity/total_quantity)
+        for lot in lots:
+            total_price = Decimal(sum(Decimal(m.unit_price) * Decimal(
+                m.internal_quantity) for m in lot_moves[lot.id] if (
+                    m.unit_price and m.internal_quantity)))
+            total_quantity = Decimal(
+                sum(m.internal_quantity for m in lot_moves[lot.id]))
+
+            res['total_cost'][lot.id] = total_price
+            res['cost_price'][lot.id] = total_price/total_quantity
 
         for name in list(res.keys()):
             if name not in names:
