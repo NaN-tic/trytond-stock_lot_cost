@@ -1,9 +1,12 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
 from decimal import Decimal
+import datetime
 from trytond.model import ModelSQL, ModelView, Unique, fields
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
+from trytond.transaction import Transaction
+from trytond.modules.product import round_price
 
 
 class LotCostCategory(ModelSQL, ModelView):
@@ -34,13 +37,20 @@ class Lot(metaclass=PoolMeta):
     def get_lot_prices(cls, lots, names):
         pool = Pool()
         Move = pool.get('stock.move')
+        Product = pool.get('product.product')
+        Location = pool.get('stock.location')
+        Company = pool.get('company.company')
 
         res = {}
         ids = [x.id for x in lots]
         for name in ['cost_price', 'total_cost']:
             res[name] = dict.fromkeys(ids)
 
+        warehouse_ids = [location.id for location in Location.search(
+            [('type', '=', 'warehouse')])]
+        product_ids = list(set(lot.product.id for lot in lots))
         lot_ids = list(set(lot.id for lot in lots))
+
         moves = Move.search([
             ('lot', 'in', lot_ids),
             ('origin', 'not like', 'stock.move,%'),
@@ -48,6 +58,12 @@ class Lot(metaclass=PoolMeta):
             ('to_location.type', '=', 'storage'),
             ('state', '=', 'done'),
             ])
+
+        with Transaction().set_context({'stock_date_end': datetime.date.max}):
+            pbl = Product.products_by_location(warehouse_ids,
+                with_childs=True,
+                grouping=('product', 'lot'),
+                grouping_filter=(product_ids, lot_ids))
 
         lot_moves = {}
         for move in moves:
@@ -60,14 +76,22 @@ class Lot(metaclass=PoolMeta):
             res['cost_price'][lot.id] = Decimal(0)
             if not lot.id in lot_moves:
                 continue
+
+            for k, v in pbl.items():
+                key = k[1:]
+                if key == (lot.product.id, lot.id):
+                    warehouse_quantity = Decimal(v)
+                    break
+
             total_price = Decimal(sum(Decimal(m.unit_price) * Decimal(
                 m.internal_quantity) for m in lot_moves[lot.id] if (
                     m.unit_price and m.internal_quantity)))
             total_quantity = Decimal(
                 sum(m.internal_quantity for m in lot_moves[lot.id]))
 
-            res['total_cost'][lot.id] = total_price
-            res['cost_price'][lot.id] = total_price/total_quantity
+            res['cost_price'][lot.id] = round_price(total_price/total_quantity)
+            res['total_cost'][lot.id] = round_price(
+                total_price/total_quantity) * warehouse_quantity
 
         for name in list(res.keys()):
             if name not in names:
