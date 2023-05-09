@@ -56,6 +56,10 @@ class Lot(metaclass=PoolMeta):
             lot_moves[move.lot.id].append(move)
 
         for lot in lots:
+            res['total_cost'][lot.id] = Decimal(0)
+            res['cost_price'][lot.id] = Decimal(0)
+            if not lot.id in lot_moves:
+                continue
             total_price = Decimal(sum(Decimal(m.unit_price) * Decimal(
                 m.internal_quantity) for m in lot_moves[lot.id] if (
                     m.unit_price and m.internal_quantity)))
