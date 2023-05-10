@@ -39,7 +39,6 @@ class Lot(metaclass=PoolMeta):
         Move = pool.get('stock.move')
         Product = pool.get('product.product')
         Location = pool.get('stock.location')
-        Company = pool.get('company.company')
 
         res = {}
         ids = [x.id for x in lots]
@@ -53,7 +52,6 @@ class Lot(metaclass=PoolMeta):
 
         moves = Move.search([
             ('lot', 'in', lot_ids),
-            ('origin', 'not like', 'stock.move,%'),
             ('from_location.type', '=', 'supplier'),
             ('to_location.type', '=', 'storage'),
             ('state', '=', 'done'),
@@ -67,27 +65,27 @@ class Lot(metaclass=PoolMeta):
 
         lot_moves = {}
         for move in moves:
-            if move.lot.id not in lot_moves:
-                lot_moves[move.lot.id] = []
-            lot_moves[move.lot.id].append(move)
+            if move.lot not in lot_moves:
+                lot_moves[move.lot] = []
+            lot_moves[move.lot].append(move)
 
         for lot in lots:
             res['total_cost'][lot.id] = Decimal(0)
             res['cost_price'][lot.id] = Decimal(0)
-            if not lot.id in lot_moves:
+            if not lot in lot_moves:
                 continue
 
+            warehouse_quantity = Decimal(0)
             for k, v in pbl.items():
                 key = k[1:]
                 if key == (lot.product.id, lot.id):
-                    warehouse_quantity = Decimal(v)
-                    break
+                    warehouse_quantity += Decimal(v)
 
             total_price = Decimal(sum(Decimal(m.unit_price) * Decimal(
-                m.internal_quantity) for m in lot_moves[lot.id] if (
+                m.internal_quantity) for m in lot_moves[lot] if (
                     m.unit_price and m.internal_quantity)))
             total_quantity = Decimal(
-                sum(m.internal_quantity for m in lot_moves[lot.id]))
+                sum(m.internal_quantity for m in lot_moves[lot]))
 
             res['cost_price'][lot.id] = round_price(total_price/total_quantity)
             res['total_cost'][lot.id] = round_price(

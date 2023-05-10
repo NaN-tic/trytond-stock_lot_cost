@@ -52,19 +52,6 @@
             <field name="perm_delete" eval="True"/>
         </record>
 
-        <!-- stock.lot.cost_line -->
-        <record model="ir.ui.view" id="stock_lot_cost_line_form_view">
-            <field name="model">stock.lot.cost_line</field>
-            <field name="type">form</field>
-            <field name="name">lot_cost_line_form</field>
-        </record>
-
-        <record model="ir.ui.view" id="stock_lot_cost_line_list_view">
-            <field name="model">stock.lot.cost_line</field>
-            <field name="type">tree</field>
-            <field name="name">lot_cost_line_list</field>
-        </record>
-
         <!-- stock.lot -->
         <record model="ir.ui.view" id="lot_view_form">
             <field name="model">stock.lot</field>
