@@ -52,7 +52,7 @@ class Lot(metaclass=PoolMeta):
 
         moves = Move.search([
             ('lot', 'in', lot_ids),
-            ('from_location.type', '=', 'supplier'),
+            ('from_location.type', 'in', ['supplier', 'production']),
             ('to_location.type', '=', 'storage'),
             ('state', '=', 'done'),
             ])
