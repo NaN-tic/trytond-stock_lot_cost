@@ -1,10 +1,12 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
 from decimal import Decimal
-
+import datetime
 from trytond.model import ModelSQL, ModelView, Unique, fields
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
+from trytond.transaction import Transaction
+from trytond.modules.product import round_price
 
 
 class LotCostCategory(ModelSQL, ModelView):
@@ -23,85 +25,76 @@ class LotCostCategory(ModelSQL, ModelView):
             ]
 
 
-class LotCostLine(ModelSQL, ModelView):
-    '''Stock Lot Cost Line'''
-    __name__ = 'stock.lot.cost_line'
-
-    lot = fields.Many2One('stock.lot', 'Lot', required=True,
-        ondelete='CASCADE')
-    category = fields.Many2One('stock.lot.cost_category', 'Category',
-        required=True)
-    unit_price = fields.Numeric('Unit Price', required=True)
-    origin = fields.Reference('Origin', selection='get_origin', readonly=True)
-
-    @classmethod
-    def _get_origin(cls):
-        'Return list of Model names for origin Reference'
-        return [
-            'stock.move',
-            ]
-
-    @classmethod
-    def get_origin(cls):
-        pool = Pool()
-        Model = pool.get('ir.model')
-        models = cls._get_origin()
-        models = Model.search([
-                ('model', 'in', models),
-                ])
-        return [('', '')] + [(m.model, m.name) for m in models]
-
-
 class Lot(metaclass=PoolMeta):
     __name__ = 'stock.lot'
 
-    cost_lines = fields.One2Many('stock.lot.cost_line', 'lot', 'Cost Lines')
-    cost_price = fields.Function(fields.Numeric('Cost Price'),
-        'get_cost_price')
+    cost_price = fields.Function(fields.Numeric("Cost Price"),
+        'get_lot_prices')
+    total_cost = fields.Function(fields.Numeric("Total Cost"),
+        'get_lot_prices')
 
-    def get_cost_price(self, name):
-        if not self.cost_lines:
-            return
-        return sum(l.unit_price for l in self.cost_lines if l.unit_price is not
-            None)
-
-    @fields.depends('product', 'cost_lines')
-    def on_change_product(self):
-        try:
-            super(Lot, self).on_change_product()
-        except AttributeError:
-            pass
-
-        if not self.id or self.id <= 0:
-            return
-
-        cost_lines = self._on_change_product_cost_lines()
-        if cost_lines:
-            cost_lines = cost_lines.get('add')
-            LotCostLine = Pool().get('stock.lot.cost_line')
-            lot_cost_lines = LotCostLine.search([
-                    ('lot', '=', self.id),
-                    ('category', '=', cost_lines[0][1]['category']),
-                    ('unit_price', '=', cost_lines[0][1]['unit_price']),
-                    ])
-            if lot_cost_lines:
-                self.cost_lines = lot_cost_lines
-
-    def _on_change_product_cost_lines(self):
+    @classmethod
+    def get_lot_prices(cls, lots, names):
         pool = Pool()
-        ModelData = pool.get('ir.model.data')
+        Move = pool.get('stock.move')
+        Product = pool.get('product.product')
+        Location = pool.get('stock.location')
 
-        if not self.product:
-            return {}
+        res = {}
+        ids = [x.id for x in lots]
+        for name in ['cost_price', 'total_cost']:
+            res[name] = dict.fromkeys(ids)
 
-        category_id = ModelData.get_id('stock_lot_cost',
-            'cost_category_standard_price')
-        return {
-            'add': [(0, {
-                        'category': category_id,
-                        'unit_price': self.product.cost_price,
-                        })],
-            }
+        warehouse_ids = [location.id for location in Location.search(
+            [('type', '=', 'warehouse')])]
+        product_ids = list(set(lot.product.id for lot in lots if lot.product))
+        lot_ids = list(set(lot.id for lot in lots))
+
+        moves = Move.search([
+            ('lot', 'in', lot_ids),
+            ('from_location.type', 'in', ['supplier', 'production']),
+            ('to_location.type', '=', 'storage'),
+            ('state', '=', 'done'),
+            ])
+
+        with Transaction().set_context({'stock_date_end': datetime.date.max}):
+            pbl = Product.products_by_location(warehouse_ids,
+                with_childs=True,
+                grouping=('product', 'lot'),
+                grouping_filter=(product_ids, lot_ids))
+
+        lot_moves = {}
+        for move in moves:
+            if move.lot not in lot_moves:
+                lot_moves[move.lot] = []
+            lot_moves[move.lot].append(move)
+
+        for lot in lots:
+            res['total_cost'][lot.id] = Decimal(0)
+            res['cost_price'][lot.id] = Decimal(0)
+            if not lot in lot_moves:
+                continue
+
+            warehouse_quantity = Decimal(0)
+            for k, v in pbl.items():
+                key = k[1:]
+                if key == (lot.product.id, lot.id):
+                    warehouse_quantity += Decimal(v)
+
+            total_price = Decimal(sum(Decimal(m.unit_price) * Decimal(
+                m.internal_quantity) for m in lot_moves[lot] if (
+                    m.unit_price and m.internal_quantity)))
+            total_quantity = Decimal(
+                sum(m.internal_quantity for m in lot_moves[lot]))
+
+            res['cost_price'][lot.id] = round_price(total_price/total_quantity)
+            res['total_cost'][lot.id] = round_price(
+                total_price/total_quantity) * warehouse_quantity
+
+        for name in list(res.keys()):
+            if name not in names:
+                del res[name]
+        return res
 
 
 class Move(metaclass=PoolMeta):
