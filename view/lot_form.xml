@@ -5,6 +5,7 @@
     <xpath expr="/form/field[@name='product']" position="after">
         <label name="cost_price"/>
         <field name="cost_price"/>
-        <field name="cost_lines" colspan="4"/>
+        <label name="total_cost"/>
+        <field name="total_cost"/>
     </xpath>
 </data>
