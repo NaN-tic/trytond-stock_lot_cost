@@ -47,7 +47,7 @@ class Lot(metaclass=PoolMeta):
 
         warehouse_ids = [location.id for location in Location.search(
             [('type', '=', 'warehouse')])]
-        product_ids = list(set(lot.product.id for lot in lots))
+        product_ids = list(set(lot.product.id for lot in lots if lot.product))
         lot_ids = list(set(lot.id for lot in lots))
 
         moves = Move.search([
