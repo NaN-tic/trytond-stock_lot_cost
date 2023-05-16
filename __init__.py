@@ -6,7 +6,6 @@ from . import stock
 def register():
     Pool.register(
         stock.LotCostCategory,
-        stock.LotCostLine,
         stock.Lot,
         stock.Move,
         module='stock_lot_cost', type_='model')
