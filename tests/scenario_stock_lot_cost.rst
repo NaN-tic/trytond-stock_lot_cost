@@ -66,6 +66,7 @@ Create supplier moves move::
     >>> move1_in.lot = lot
     >>> move1_in.quantity = 100
     >>> move1_in.unit_price = Decimal('1')
+    >>> move1_in.currency = company.currency
     >>> move1_in.save()
     >>> move1_in.click('do')
 
@@ -77,6 +78,7 @@ Create supplier moves move::
     >>> move2_in.lot = lot
     >>> move2_in.quantity = 100
     >>> move2_in.unit_price = Decimal('2')
+    >>> move2_in.currency = company.currency
     >>> move2_in.save()
     >>> move2_in.click('do')
 
