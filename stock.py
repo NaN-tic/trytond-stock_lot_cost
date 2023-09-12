@@ -104,3 +104,11 @@ class Move(metaclass=PoolMeta):
     def __setup__(cls):
         super(Move, cls).__setup__()
         cls.lot.context['from_move'] = Eval('id')
+
+    def get_cost_price(self, product_cost_price=None):
+        cost_price = super().get_cost_price(product_cost_price=None)
+
+        with Transaction().set_context(date=self.effective_date):
+            if self.lot and self.lot.cost_price is not None and self.cost_price is None:
+                return self.lot.cost_price
+        return cost_price
