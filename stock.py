@@ -106,9 +106,14 @@ class Move(metaclass=PoolMeta):
         cls.lot.context['from_move'] = Eval('id')
 
     def get_cost_price(self, product_cost_price=None):
+        pool = Pool()
+        Lot = pool.get('stock.lot')
+
         cost_price = super().get_cost_price(product_cost_price=None)
 
-        with Transaction().set_context(date=self.effective_date):
-            if self.lot and self.lot.cost_price is not None and self.cost_price is None:
-                return self.lot.cost_price
+        if self.lot and self.to_location.type == 'production':
+            with Transaction().set_context(date=self.effective_date):
+                lot = Lot(self.lot.id) # Need to reinstantiate to ensure the context is correct
+                if lot.cost_price is not None:
+                    return lot.cost_price
         return cost_price
