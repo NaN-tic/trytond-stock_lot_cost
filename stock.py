@@ -87,6 +87,9 @@ class Lot(metaclass=PoolMeta):
             total_quantity = Decimal(
                 sum(m.internal_quantity for m in lot_moves[lot]))
 
+            if not total_quantity:
+                continue
+
             res['cost_price'][lot.id] = round_price(total_price/total_quantity)
             res['total_cost'][lot.id] = round_price(
                 total_price/total_quantity) * warehouse_quantity
