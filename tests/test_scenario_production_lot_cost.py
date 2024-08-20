@@ -102,8 +102,6 @@ class Test(unittest.TestCase):
         input.to_location = production.location
         input.product = product
         input.quantity = 1
-        input.unit_price = Decimal(0)
-        input.currency = production.company.currency
         output = production.outputs.new()
         output.from_location = production.location
         output.to_location = production.warehouse.storage_location
