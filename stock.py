@@ -72,7 +72,7 @@ class Lot(metaclass=PoolMeta):
         for lot in lots:
             res['total_cost'][lot.id] = Decimal(0)
             res['cost_price'][lot.id] = Decimal(0)
-            if not lot in lot_moves:
+            if not lot in lot_moves or not lot.product:
                 continue
 
             warehouse_quantity = Decimal(0)
