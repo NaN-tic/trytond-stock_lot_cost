@@ -57,7 +57,8 @@ class Lot(metaclass=PoolMeta):
             ('state', '=', 'done'),
             ])
 
-        with Transaction().set_context({'stock_date_end': datetime.date.max}):
+        stock_date_end = Transaction().context.get('date', datetime.date.max)
+        with Transaction().set_context(stock_date_end=stock_date_end):
             pbl = Product.products_by_location(warehouse_ids,
                 with_childs=True,
                 grouping=('product', 'lot'),
