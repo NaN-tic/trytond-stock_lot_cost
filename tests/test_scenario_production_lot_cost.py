@@ -42,16 +42,29 @@ class Test(unittest.TestCase):
 
         # Create product
         unit, = UoM.find([('name', '=', 'Unit')])
-        template = ProductTemplate()
-        template.name = "Product"
-        template.default_uom = unit
-        template.type = 'goods'
-        template.producible = True
-        template.list_price = Decimal('10.0000')
-        template.lot_required = ['storage']
-        template.lot_sequence = sequence
+        template = ProductTemplate(
+            name='Product',
+            default_uom=unit,
+            type='goods',
+            producible=True,
+            list_price=Decimal('10.0000'),
+            lot_required=['storage'],
+            lot_sequence=sequence,
+            )
         template.save()
         product, = template.products
+
+        template2 = ProductTemplate(
+            name='Product2',
+            default_uom=unit,
+            type='goods',
+            producible=True,
+            list_price=Decimal('10.0000'),
+            )
+        template2.save()
+        product2, = template2.products
+        product2.cost_price = Decimal('2.0000')
+        product2.save()
 
         # Get stock locations
         Location = Model.get('stock.location')
@@ -67,28 +80,42 @@ class Test(unittest.TestCase):
 
         # Create supplier moves move
         Move = Model.get('stock.move')
-        move1_in = Move()
-        move1_in.from_location = supplier_loc
-        move1_in.to_location = storage_loc
-        move1_in.product = product
-        move1_in.company = company
-        move1_in.lot = lot
-        move1_in.quantity = 100
-        move1_in.unit_price = Decimal('1')
-        move1_in.currency = company.currency
+        move1_in = Move(
+            from_location=supplier_loc,
+            to_location=storage_loc,
+            product=product,
+            company=company,
+            lot=lot,
+            quantity=100,
+            unit_price=Decimal('1'),
+            currency=company.currency,
+            )
         move1_in.save()
         move1_in.click('do')
-        move2_in = Move()
-        move2_in.from_location = supplier_loc
-        move2_in.to_location = storage_loc
-        move2_in.product = product
-        move2_in.company = company
-        move2_in.lot = lot
-        move2_in.quantity = 100
-        move2_in.unit_price = Decimal('2')
-        move2_in.currency = company.currency
+        move2_in = Move(
+            from_location=supplier_loc,
+            to_location=storage_loc,
+            product=product,
+            company=company,
+            lot=lot,
+            quantity=100,
+            unit_price=Decimal('2'),
+            currency=company.currency,
+            )
         move2_in.save()
         move2_in.click('do')
+
+        move3_in = Move(
+            from_location=supplier_loc,
+            to_location=storage_loc,
+            product=product2,
+            company=company,
+            quantity=100,
+            unit_price=Decimal('3'),
+            currency=company.currency,
+            )
+        move3_in.save()
+        move3_in.click('do')
 
         # Check the lot costs
         lot = Lot(lot.id)
@@ -102,6 +129,11 @@ class Test(unittest.TestCase):
         input.to_location = production.location
         input.product = product
         input.quantity = 1
+        input = production.inputs.new()
+        input.from_location = production.warehouse.storage_location
+        input.to_location = production.location
+        input.product = product2
+        input.quantity = 2
         output = production.outputs.new()
         output.from_location = production.location
         output.to_location = production.warehouse.storage_location
@@ -110,9 +142,28 @@ class Test(unittest.TestCase):
         output.unit_price = Decimal(0)
         output.currency = production.company.currency
         production.click('wait')
-        self.assertEqual(production.cost, Decimal('0.0000'))
-        input, = production.inputs
-        input.lot = lot
-        input.save()
-        production = Production(production.id)
-        self.assertEqual(production.cost, Decimal('1.5000'))
+
+        # production cost price from product2
+        self.assertEqual(production.cost, Decimal('4.0000'))
+        input1, = [input for input in production.inputs if input.product == product]
+        input1.lot = lot
+        input1.save()
+
+        # production cost price from product2 (product.cost_price)+ product (move.get_cost_price())
+        production.reload()
+        self.assertEqual(production.cost, Decimal('5.5000'))
+
+        production.click('assign_try')
+        self.assertEqual(production.state, 'assigned')
+        production.click('run')
+        self.assertEqual(production.state, 'running')
+
+        input1, input2 = production.inputs
+        self.assertEqual(input1.state, 'done')
+        self.assertEqual(input1.cost_price, Decimal('2'))
+        self.assertEqual(input2.state, 'done')
+        self.assertEqual(input2.cost_price, Decimal('0'))
+
+        # production cost price from product2 (product.cost_price)+ product (move.get_cost_price())
+        production.reload()
+        self.assertEqual(production.cost, Decimal('5.5000'))

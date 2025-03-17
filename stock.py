@@ -71,8 +71,8 @@ class Lot(metaclass=PoolMeta):
             lot_moves[move.lot].append(move)
 
         for lot in lots:
-            res['total_cost'][lot.id] = Decimal(0)
-            res['cost_price'][lot.id] = Decimal(0)
+            res['total_cost'][lot.id] = None
+            res['cost_price'][lot.id] = None
             if not lot in lot_moves or not lot.product:
                 continue
 
