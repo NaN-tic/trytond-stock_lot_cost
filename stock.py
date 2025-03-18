@@ -119,5 +119,5 @@ class Move(metaclass=PoolMeta):
             with Transaction().set_context(date=self.effective_date):
                 lot = Lot(self.lot.id) # Need to reinstantiate to ensure the context is correct
                 if lot.cost_price is not None:
-                    return lot.cost_price
+                    return rount_price(lot.cost_price)
         return cost_price
