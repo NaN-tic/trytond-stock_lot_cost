@@ -1,10 +1,6 @@
-# 
+#
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
-
-msgctxt "error:stock.lot.cost_category:"
-msgid "The Name of the Lot Cost Category must be unique."
-msgstr "El nombre de la categoría del coste del lote debe ser único."
 
 msgctxt "field:stock.lot,cost_lines:"
 msgid "Cost Lines"
